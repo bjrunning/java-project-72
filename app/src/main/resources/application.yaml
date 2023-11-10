@@ -1,9 +1,12 @@
+ebean:
+  migration:
+    run: true
 datasource:
   default: ${APP_ENV}
   development:
     username: sa
     password: sa
-    url: "jdbc:h2:./database"
+    url: "jdbc:h2:mem:project"
   production:
     username: ${JDBC_DATABASE_USERNAME}
     password: ${JDBC_DATABASE_PASSWORD}
