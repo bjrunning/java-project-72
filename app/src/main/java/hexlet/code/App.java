@@ -7,6 +7,7 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ import static hexlet.code.AppUtils.getPort;
 import static hexlet.code.AppUtils.getDatabaseUrl;
 import static hexlet.code.AppUtils.isProduction;
 import static hexlet.code.AppUtils.getTemplateEngine;
+
 
 public class App {
     public static void main(String[] args) throws SQLException, IOException {
@@ -29,6 +31,7 @@ public class App {
         hikariConfig.setJdbcUrl(getDatabaseUrl());
         var dataSource = new HikariDataSource(hikariConfig);
         var url = App.class.getClassLoader().getResource("schema.sql");
+        InputStream inputStream = App.class.getResourceAsStream("/schema.sql");
         var file = new File(url.getFile());
         var sql = Files.lines(file.toPath())
                 .collect(Collectors.joining("\n"));
