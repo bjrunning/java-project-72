@@ -2,12 +2,14 @@ package hexlet.code;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+
 import hexlet.code.controllers.RootController;
 import hexlet.code.controllers.UrlsController;
-import hexlet.code.repository.BaseRepository;
+
 import io.javalin.Javalin;
 import io.javalin.rendering.template.JavalinThymeleaf;
 import lombok.extern.slf4j.Slf4j;
+
 import nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
@@ -21,24 +23,27 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.stream.Collectors;
 
-import static io.javalin.apibuilder.ApiBuilder.path;
-import static io.javalin.apibuilder.ApiBuilder.post;
-import static io.javalin.apibuilder.ApiBuilder.get;
-
 @Slf4j
 public final class App {
 
     private static int getPort() {
         String port = System.getenv().getOrDefault("PORT", "7070");
-        return Integer.valueOf(port);
+        return Integer.parseInt(port);
     }
 
     private static String getDatabaseUrl() {
         return System.getenv().getOrDefault("JDBC_DATABASE_URL", "jdbc:h2:mem:project");
     }
 
-    public static Javalin getApp() throws IOException, SQLException {
+    private static void addRoutes(Javalin app) {
+        app.get("/", RootController::welcome);
+        app.post("/urls", UrlsController::addUrl);
+        app.get("/urls", UrlsController::listOfUrls);
+        app.get("/urls/{id}", UrlsController::showUrl);
+        app.post("/urls/{id}/checks", UrlsController::checks);
+    }
 
+    public static Javalin getApp() throws IOException, SQLException {
         var hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(getDatabaseUrl());
         String username = System.getenv("JDBC_DATABASE_USERNAME");
@@ -54,7 +59,8 @@ public final class App {
              var statement = connection.createStatement()) {
             statement.execute(sql);
         }
-        BaseRepository.dataSource = dataSource;
+
+        BaseRepository.setDataSource(dataSource);
 
         Javalin app = Javalin.create(config -> {
             if (!isProduction()) {
@@ -64,11 +70,7 @@ public final class App {
         });
 
         addRoutes(app);
-
-        app.before(ctx -> {
-            ctx.contentType("text/html; charset=utf-8");
-        });
-
+        app.before(ctx -> ctx.attribute("ctx", ctx));
         return app;
     }
 
@@ -104,20 +106,6 @@ public final class App {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
             return reader.lines().collect(Collectors.joining("\n"));
         }
-    }
-
-    private static void addRoutes(Javalin app) {
-        app.get("/", RootController.welcome);
-        app.routes(() -> {
-            path("urls", () -> {
-                get(UrlsController.listURLs);
-                post(UrlsController.createUrl);
-                path("{id}", () -> {
-                    get(UrlsController.showUrl);
-                    post("/checks", UrlsController.checkUrl);
-                });
-            });
-        });
     }
 
     public static void main(String[] args) throws SQLException, IOException {
