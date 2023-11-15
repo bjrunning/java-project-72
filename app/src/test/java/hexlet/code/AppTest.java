@@ -1,6 +1,6 @@
 package hexlet.code;
 
-import kong.unirest.Empty;
+import hexlet.code.repository.BaseRepository;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
@@ -77,7 +77,7 @@ public class AppTest {
         @Test
         void testAddUrl() {
             String inputUrl = "https://testwebpage.ru";
-            HttpResponse<Empty> responsePost = Unirest
+            HttpResponse responsePost = Unirest
                     .post(baseUrl + "/urls")
                     .field("url", inputUrl)
                     .asEmpty();
@@ -96,7 +96,7 @@ public class AppTest {
         @Test
         void testAddWrongUrl() {
             String inputUrl = "yandex.ru";
-            HttpResponse<Empty> responsePost = Unirest
+            HttpResponse responsePost = Unirest
                     .post(baseUrl + "/urls")
                     .field("url", inputUrl)
                     .asEmpty();
@@ -121,7 +121,7 @@ public class AppTest {
                     .field("url", testUrl)
                     .asEmpty();
 
-            HttpResponse<Empty> responsePost2 = Unirest
+            HttpResponse responsePost2 = Unirest
                     .post(baseUrl + "/urls")
                     .field("url", testUrl)
                     .asEmpty();

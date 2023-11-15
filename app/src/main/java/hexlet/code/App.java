@@ -6,6 +6,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import hexlet.code.controllers.RootController;
 import hexlet.code.controllers.UrlsController;
 
+import hexlet.code.repository.BaseRepository;
 import io.javalin.Javalin;
 import io.javalin.rendering.template.JavalinThymeleaf;
 import lombok.extern.slf4j.Slf4j;

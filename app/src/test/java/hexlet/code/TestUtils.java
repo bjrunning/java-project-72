@@ -3,6 +3,7 @@ package hexlet.code;
 import com.zaxxer.hikari.HikariDataSource;
 import hexlet.code.domain.Url;
 import hexlet.code.domain.UrlCheck;
+import hexlet.code.repository.BaseRepository;
 
 import java.io.IOException;
 import java.nio.file.Files;

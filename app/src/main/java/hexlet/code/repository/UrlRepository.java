@@ -5,7 +5,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.ArrayList;
-import hexlet.code.BaseRepository;
+
 import hexlet.code.domain.Url;
 
 public class UrlRepository extends BaseRepository {
