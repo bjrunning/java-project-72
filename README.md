@@ -6,7 +6,7 @@
 ### Analyze Website
 [Analyze Website](https://analyze-website.onrender.com) - a site that analyzes specified pages for SEO suitability.
 
-![main.png](images/main.png)
+![home.png](images/home.png)
 
 ![sites.png](images/sites.png)
 
