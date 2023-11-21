@@ -1,6 +1,9 @@
 package hexlet.code;
 
+import hexlet.code.domain.Url;
 import hexlet.code.repository.BaseRepository;
+import hexlet.code.repository.UrlCheckRepository;
+import hexlet.code.repository.UrlRepository;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
@@ -12,10 +15,6 @@ import org.junit.jupiter.api.Test;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-import static hexlet.code.TestUtils.readFixture;
-import static hexlet.code.TestUtils.getDatabaseUrl;
-import static hexlet.code.TestUtils.findUrlById;
-import static hexlet.code.TestUtils.findIdByUlrName;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import kong.unirest.HttpResponse;
@@ -23,14 +22,38 @@ import kong.unirest.Unirest;
 import io.javalin.Javalin;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
-
 
 public class AppTest {
     private static Javalin app;
     private static MockWebServer mockServer;
     private static String baseUrl;
     protected static HikariDataSource dataSource;
+
+    private static String getDatabaseUrl() {
+        return System.getenv().getOrDefault("JDBC_DATABASE_URL", "jdbc:h2:mem:project");
+    }
+
+    private static String readFixture() throws IOException {
+        Path filePath = getFixturePath();
+        return Files.readString(filePath).trim();
+    }
+
+    private static Path getFixturePath() {
+        return Paths.get("src", "test", "resources", "fixtures", "index.html")
+                .toAbsolutePath().normalize();
+    }
+
+    private static Url findUrlById(Long id) throws SQLException {
+        return UrlRepository.find(id);
+    }
+
+    private static Long findIdByUrlName(String urlName) throws SQLException {
+        return UrlRepository.findByName(urlName).getId();
+    }
 
     @BeforeAll
     public static void beforeAll() throws IOException, SQLException {
@@ -53,7 +76,7 @@ public class AppTest {
         MockResponse mockedResponse = new MockResponse()
                 .addHeader("Content-Type", "text/html; charset=utf-8")
                 .addHeader("Cache-Control", "no-cache")
-                .setBody(readFixture("index.html"));
+                .setBody(readFixture());
         mockServer.enqueue(mockedResponse);
         mockServer.start();
     }
@@ -188,20 +211,19 @@ public class AppTest {
                     .field("url", testUrl)
                     .asEmpty();
 
-            var id = findIdByUlrName(dataSource, testUrl);
-            var urlFromDB = findUrlById(dataSource, id);
+            var id = findIdByUrlName(testUrl);
+            var urlFromDB = findUrlById(id);
             assertThat(urlFromDB.getName()).isEqualTo(testUrl);
 
             Unirest
-                    .post(baseUrl + "/urls/" + id.toString() + "/checks")
+                    .post(baseUrl + "/urls/" + id + "/checks")
                     .asString();
 
             HttpResponse<String> response = Unirest
                     .get(baseUrl + "/urls/" + id)
                     .asString();
 
-
-            var actualCheckUrl = TestUtils
+            var actualCheckUrl = UrlCheckRepository
                     .findLatestChecks().get(id);
 
             assertThat(actualCheckUrl).isNotNull();
